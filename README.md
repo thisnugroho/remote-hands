@@ -9,7 +9,14 @@ fix, or deploy anything there.
 
 ## Screenshots
 
-The screenshots use dummy servers from the documentation IP ranges.
+The screenshots use dummy servers. The chat ran against a throwaway Ubuntu
+container named `web-01`.
+
+**An AI chat on a server.** New chat connects the agent to `web-01`. It reports
+the server's status, then answers a follow-up by checking nginx's processes,
+config, and logs itself.
+
+![A chat on web-01: the agent reports hostname, OS, uptime, load, memory, and disk, then checks nginx and counts 404s per path from the access log](docs/screenshots/chat.png)
 
 | Servers in a category | Editing a server |
 | --- | --- |
