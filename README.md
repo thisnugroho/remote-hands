@@ -5,14 +5,86 @@ category, and opens an AI chat bound to one server. The agent in that chat runs
 commands on the server through the `ssh_exec` tool, so you can ask it to check,
 fix, or deploy anything there.
 
-## Install
+![Remote Hands showing server categories as a grid](docs/screenshots/categories.png)
+
+## Screenshots
+
+The screenshots use dummy servers from the documentation IP ranges.
+
+| Servers in a category | Editing a server |
+| --- | --- |
+| ![The Production category with four servers, each with Edit, Category, New chat, and delete buttons](docs/screenshots/servers.png) | ![The edit form for db-01, with the password left blank to keep the stored one](docs/screenshots/edit-server.png) |
+
+| Creating a category |
+| --- |
+| ![The New category form with two servers selected to move into Backups](docs/screenshots/new-category.png) |
+
+- **Categories.** The panel opens on a grid of categories. Click once to select
+  one, and double-click or press Enter to open it. Escape goes back.
+- **Servers.** Each row starts an AI chat on that server with **New chat**.
+  **Edit** changes its details, **Category** moves it, and the bin removes it.
+- **New category.** Name it and tick the servers to move in. An empty category
+  stays until you delete it from its page.
+
+## Installation
+
+### Requirements
+
+- bb 0.47 or newer.
+- A bb server on macOS or Linux with OpenSSH 8.4 or newer. Password login
+  relies on `SSH_ASKPASS_REQUIRE`, which arrived in 8.4. Run `ssh -V` to check.
+- Network access from the bb server to your servers on their SSH ports.
+
+### 1. Install the plugin
+
+Install it from GitHub. bb clones the repository, installs its dependencies,
+and builds it.
 
 ```sh
 bb plugin install git:https://github.com/thisnugroho/remote-hands.git
 ```
 
-The plugin id stays `ssh`, so its command is `bb ssh` and its settings live
-under `bb plugin config ssh`.
+To work on the plugin itself, install a local clone instead. bb then loads
+the source in place.
+
+```sh
+git clone git@github.com:thisnugroho/remote-hands.git
+cd remote-hands
+npm install --include=dev --ignore-scripts
+bb plugin install .
+```
+
+Open **Remote Hands** in the bb sidebar to check that it loaded.
+
+### 2. Add your servers
+
+Pick whichever fits:
+
+- **From the panel.** Click **Add server** and fill in the name, host, user,
+  port, and either a password or a key path.
+- **From `~/.ssh/config`.** `bb ssh import` previews your existing hosts as key
+  entries, and `bb ssh import --write` saves them.
+- **From the terminal.** For example:
+  `printf '%s' "$PW" | bb ssh add vps --host 192.0.2.10 --user ubuntu --mode password --password-stdin`.
+
+### 3. Start a chat
+
+Open a category, then click **New chat** on a server. The agent connects,
+reports the server's status, and waits for instructions. It runs every command
+for that server through the `ssh_exec` tool and asks before destructive steps
+such as `rm -rf`, dropping a database, or a reboot.
+
+### Update or remove
+
+```sh
+bb plugin update ssh
+bb plugin remove ssh
+```
+
+Removing the plugin deletes its settings but leaves your servers file in place.
+
+The plugin id is `ssh`, so its command is `bb ssh` and its settings live under
+`bb plugin config ssh`.
 
 ## Servers file
 
