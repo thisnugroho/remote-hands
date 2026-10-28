@@ -1,0 +1,33 @@
+# Import concrete aliases without executing config directives.
+Host web web-backup
+  HostName web.example.com
+  User deploy
+  Port=2222
+  IdentityFile "~/.ssh/web key"
+  IdentityFile ~/.ssh/ignored-second-key
+
+Host web
+  HostName ignored.example.com
+  User ignored-user
+
+Host existing
+  HostName replaced.example.com
+  User replacement
+
+Host *.internal !excluded ?test
+  HostName ignored.internal
+  User wildcard
+
+Host api
+  HostName=api.example.com # inline note
+  User = ubuntu
+  IdentityFile ~/.ssh/%h-%r
+
+Host defaults
+
+Host *
+  User ignored-wildcard-default
+
+Match host localhost
+  User ignored-match
+  ProxyCommand touch /tmp/should-never-execute
