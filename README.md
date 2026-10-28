@@ -44,12 +44,16 @@ config, and logs itself.
 
 ### 1. Install the plugin
 
-Install it from GitHub. bb clones the repository, installs its dependencies,
-and builds it.
+Install the latest release from GitHub. bb clones the repository, installs its
+dependencies, and builds it.
 
 ```sh
-bb plugin install git:https://github.com/thisnugroho/remote-hands.git
+bb plugin install git:https://github.com/thisnugroho/remote-hands.git@^0
 ```
+
+`@^0` tracks release tags (`v0.1.0`, `v0.2.0`, and so on) below 1.0, so updates
+only ever move to a tagged release. To follow every commit on `main` instead,
+drop the range: `bb plugin install git:https://github.com/thisnugroho/remote-hands.git@main`.
 
 To work on the plugin itself, install a local clone instead. bb then loads
 the source in place.
@@ -81,14 +85,61 @@ reports the server's status, and waits for instructions. It runs every command
 for that server through the `ssh_exec` tool and asks before destructive steps
 such as `rm -rf`, dropping a database, or a reboot.
 
-### Update or remove
+## Updating
+
+### Installed from GitHub
+
+Check for a newer release, then apply it:
 
 ```sh
+bb plugin outdated
 bb plugin update ssh
+```
+
+`bb plugin outdated` lists plugins with a compatible update. `bb plugin update
+ssh` installs it, rebuilds, and reloads the plugin. If the new version fails to
+load, bb rolls back to the version you had. An install that tracks `@^0`
+moves to the newest `v0.x` tag. An install that tracks `@main` moves to the
+latest commit.
+
+To switch tracking, for example from `@main` to releases, remove the plugin and
+install it again with the new form. Your servers file stays in place.
+
+### Installed from a local clone
+
+Pull the changes, rebuild, and reload:
+
+```sh
+cd remote-hands
+git pull
+npm install --include=dev --ignore-scripts
+bb plugin build
+bb plugin reload ssh
+```
+
+### What an update keeps
+
+Updates never touch `~/.ssh/bb-servers.json`, the plugin's settings, or your
+existing chats. Each chat stays bound to its server by name.
+
+## Removing
+
+```sh
 bb plugin remove ssh
 ```
 
 Removing the plugin deletes its settings but leaves your servers file in place.
+
+## Releasing a new version
+
+For maintainers:
+
+1. Bump `version` in `package.json` and commit.
+2. Tag the commit and push the tag: `git tag -a v0.2.0 -m "Remote Hands v0.2.0" && git push origin v0.2.0`.
+3. Publish the notes: `gh release create v0.2.0 --title "Remote Hands v0.2.0" --notes-file notes.md`.
+
+bb records the commit each tag pointed to and refuses a tag that later moves,
+so publish a fix as a new version instead of moving a tag.
 
 The plugin id is `ssh`, so its command is `bb ssh` and its settings live under
 `bb plugin config ssh`.
